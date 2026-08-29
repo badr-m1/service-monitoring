@@ -1,0 +1,52 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: service-monitoring-db
+    environment:
+      POSTGRES_DB: service_monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: service-monitoring-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/service_monitoring
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - postgres
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    container_name: service-monitoring-worker
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/service_monitoring
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: service-monitoring-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
