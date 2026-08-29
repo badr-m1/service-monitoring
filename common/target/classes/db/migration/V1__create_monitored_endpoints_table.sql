@@ -1,0 +1,6 @@
+CREATE TABLE monitored_endpoints (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    url VARCHAR(2048) NOT NULL UNIQUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
