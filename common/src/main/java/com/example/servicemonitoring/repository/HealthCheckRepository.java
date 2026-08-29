@@ -1,0 +1,14 @@
+package com.example.servicemonitoring.repository;
+
+import java.util.List;
+
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.servicemonitoring.entity.HealthCheck;
+
+public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long>{
+    
+    List<HealthCheck> findByEndpointIdOrderByCheckedAtDesc(long endpointId, Pageable pageable);
+
+} 
