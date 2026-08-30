@@ -5,8 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Table(name = "monitored_endpoints")
+@Getter
+@Setter
+@NoArgsConstructor
 public class MonitoredEndpoint {
     
     @Id
@@ -27,5 +35,11 @@ public class MonitoredEndpoint {
 
     @Column(nullable = false)
     boolean isActive = true;
+
+    public MonitoredEndpoint(String name, String url, boolean isActive){
+        this.name = name;
+        this.url = url;
+        this.isActive = isActive;
+    }
 
 }

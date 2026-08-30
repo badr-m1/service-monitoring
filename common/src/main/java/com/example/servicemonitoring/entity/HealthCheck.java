@@ -10,8 +10,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Table(name = "health_checks")
+@Getter
+@Setter
+@NoArgsConstructor
 public class HealthCheck {
 
     @Id
@@ -29,9 +37,24 @@ public class HealthCheck {
     int statusCode;
 
     @Column(nullable = false)
-    Duration responseTime;
+    long responseTime;
 
     @Column(nullable = false)
     Instant checkedAt;
+
+    public HealthCheck(
+            long endpointId,
+            EndpointStatus status,
+            int statusCode,
+            long responseTime,
+            Instant checkedAt
+    ) {
+        this.endpointId = endpointId;
+        this.status = status;
+        this.statusCode = statusCode;
+        this.responseTime = responseTime;
+        this.checkedAt = checkedAt;
+    }
+
     
 }
