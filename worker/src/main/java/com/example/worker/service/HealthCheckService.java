@@ -7,10 +7,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.example.servicemonitoring.entity.EndpointStatus;
+import com.example.servicemonitoring.entity.ServiceStatus;
 import com.example.servicemonitoring.entity.HealthCheck;
-import com.example.servicemonitoring.entity.MonitoredEndpoint;
-import com.example.servicemonitoring.repository.MonitoredEndpointRepository;
+import com.example.servicemonitoring.entity.Service;
+import com.example.servicemonitoring.repository.ServiceRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,37 +18,37 @@ import reactor.core.publisher.Mono;
 @Service
 public class HealthCheckService {
     
-    private final MonitoredEndpointRepository monitoredEndpointRepository;
+    private final ServiceRepository serviceRepository;
     private final WebClient webClient;
 
     public HealthCheckService(
-        MonitoredEndpointRepository monitoredEndpointRepository,
+        ServiceRepository serviceRepository,
         WebClient webClient){
-        this.monitoredEndpointRepository = monitoredEndpointRepository;
+        this.serviceRepository = serviceRepository;
         this.webClient = webClient;
     }
 
     public Flux<HealthCheck> checkAll(){
-        List<MonitoredEndpoint> endpointList = monitoredEndpointRepository.findAll();
+        List<Service> services = serviceRepository.findAll();
 
-        return Flux.fromIterable(endpointList)
+        return Flux.fromIterable(services)
         .flatMap(this::check);
 
     }
 
-    private Mono<HealthCheck> check(MonitoredEndpoint endpoint){
+    private Mono<HealthCheck> check(Service service){
         Instant start = Instant.now();
 
         return webClient
         .get()
-        .uri(endpoint.getUrl())
+        .uri(service.getUrl())
         .exchangeToMono(response -> {
             Instant end = Instant.now();
             int code = response.statusCode().value();
-            EndpointStatus status = (code > 199 && code <= 299)? EndpointStatus.UP : EndpointStatus.DOWN;
+            ServiceStatus status = (code > 199 && code <= 299)? ServiceStatus.UP : ServiceStatus.DOWN;
             return Mono.just(
                 new HealthCheck(
-                    endpoint.getId(), 
+                    service.getId(), 
                     status, 
                     code,
                     Duration.between(start, end).toMillis(), 
@@ -59,8 +59,8 @@ public class HealthCheckService {
             Instant end = Instant.now();
             return Mono.just(
                 new HealthCheck(
-                    endpoint.getId(), 
-                    EndpointStatus.DOWN, 
+                    service.getId(), 
+                    ServiceStatus.DOWN, 
                     -1,
                     Duration.between(start, end).toMillis(), 
                     start)
