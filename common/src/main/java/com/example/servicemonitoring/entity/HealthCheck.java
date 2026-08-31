@@ -31,7 +31,7 @@ public class HealthCheck {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    EndpointStatus status;
+    ServiceStatus status;
 
     @Column(nullable = false)
     int statusCode;
@@ -44,7 +44,7 @@ public class HealthCheck {
 
     public HealthCheck(
             long serviceId,
-            EndpointStatus status,
+            ServiceStatus status,
             int statusCode,
             long responseTime,
             Instant checkedAt

@@ -1,6 +1,6 @@
 package com.example.servicemonitoring.entity;
 
-public enum EndpointStatus {
+public enum ServiceStatus {
     UP,
     DOWN
 }
