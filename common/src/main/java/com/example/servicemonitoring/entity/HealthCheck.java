@@ -27,7 +27,7 @@ public class HealthCheck {
     long id;
 
     @Column(nullable = false)
-    long endpointId;
+    long serviceId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,13 +43,13 @@ public class HealthCheck {
     Instant checkedAt;
 
     public HealthCheck(
-            long endpointId,
+            long serviceId,
             EndpointStatus status,
             int statusCode,
             long responseTime,
             Instant checkedAt
     ) {
-        this.endpointId = endpointId;
+        this.serviceId = serviceId;
         this.status = status;
         this.statusCode = statusCode;
         this.responseTime = responseTime;

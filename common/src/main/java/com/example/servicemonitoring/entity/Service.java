@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MonitoredEndpoint {
+public class Service {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class MonitoredEndpoint {
     @Column(nullable = false)
     boolean isActive = true;
 
-    public MonitoredEndpoint(String name, String url, boolean isActive){
+    public Service(String name, String url, boolean isActive){
         this.name = name;
         this.url = url;
         this.isActive = isActive;

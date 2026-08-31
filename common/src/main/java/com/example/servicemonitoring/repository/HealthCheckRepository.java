@@ -8,6 +8,6 @@ import com.example.servicemonitoring.entity.HealthCheck;
 
 public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long>{
     
-    List<HealthCheck> findByEndpointIdOrderByCheckedAtDesc(long endpointId, Pageable pageable);
+    List<HealthCheck> findByServiceIdOrderByCheckedAtDesc(long serviceId, Pageable pageable);
 
 } 
