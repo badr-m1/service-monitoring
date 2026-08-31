@@ -1,6 +1,4 @@
 package com.example.servicemonitoring.entity;
-
-import java.time.Duration;
 import java.time.Instant;
 
 import jakarta.persistence.Column;

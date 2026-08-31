@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "services")
+@Table(name = "monitored_services")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,13 +33,15 @@ public class MonitoredService {
     )
     String url;
 
-    @Column(nullable = false)
-    boolean isActive = true;
-
-    public MonitoredService(String name, String url, boolean isActive){
+    public MonitoredService(String name, String url){
         this.name = name;
         this.url = url;
-        this.isActive = isActive;
+    }
+
+    public MonitoredService(long id, String name, String url){
+        this.id = id;
+        this.name = name;
+        this.url = url;
     }
 
 }
