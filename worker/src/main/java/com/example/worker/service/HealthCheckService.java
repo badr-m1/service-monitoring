@@ -9,8 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.servicemonitoring.entity.ServiceStatus;
 import com.example.servicemonitoring.entity.HealthCheck;
-import com.example.servicemonitoring.entity.Service;
-import com.example.servicemonitoring.repository.ServiceRepository;
+import com.example.servicemonitoring.entity.MonitoredService;
+import com.example.servicemonitoring.repository.MonitoredServiceRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,25 +18,25 @@ import reactor.core.publisher.Mono;
 @Service
 public class HealthCheckService {
     
-    private final ServiceRepository serviceRepository;
+    private final MonitoredServiceRepository serviceRepository;
     private final WebClient webClient;
 
     public HealthCheckService(
-        ServiceRepository serviceRepository,
+        MonitoredServiceRepository serviceRepository,
         WebClient webClient){
         this.serviceRepository = serviceRepository;
         this.webClient = webClient;
     }
 
     public Flux<HealthCheck> checkAll(){
-        List<Service> services = serviceRepository.findAll();
+        List<MonitoredService> services = serviceRepository.findAll();
 
         return Flux.fromIterable(services)
         .flatMap(this::check);
 
     }
 
-    private Mono<HealthCheck> check(Service service){
+    private Mono<HealthCheck> check(MonitoredService service){
         Instant start = Instant.now();
 
         return webClient

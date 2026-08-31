@@ -1,5 +1,5 @@
 package com.example.api.DTO;
-import com.example.servicemonitoring.entity.Service;
+import com.example.servicemonitoring.entity.MonitoredService;
 
 public record ServiceSummaryDTO(
     long id, 
@@ -7,7 +7,7 @@ public record ServiceSummaryDTO(
     String url, 
     HealthCheckDTO healthCheck
 ) {
-    public ServiceSummaryDTO(Service service, HealthCheckDTO healthCheck){
+    public ServiceSummaryDTO(MonitoredService service, HealthCheckDTO healthCheck){
         this(
             service.getId(), 
             service.getName(), 

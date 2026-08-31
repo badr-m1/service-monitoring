@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "monitored_endpoints")
+@Table(name = "services")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Service {
+public class MonitoredService {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +36,7 @@ public class Service {
     @Column(nullable = false)
     boolean isActive = true;
 
-    public Service(String name, String url, boolean isActive){
+    public MonitoredService(String name, String url, boolean isActive){
         this.name = name;
         this.url = url;
         this.isActive = isActive;
