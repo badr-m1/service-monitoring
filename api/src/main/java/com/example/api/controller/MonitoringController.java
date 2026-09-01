@@ -61,4 +61,9 @@ public class MonitoringController {
         monitoringService.deleteService(id);
     }
     
+    @GetMapping("/config")
+    public int getConfig() {
+        return monitoringService.getHealthCheckIntervalSeconds();
+    }
+    
 }

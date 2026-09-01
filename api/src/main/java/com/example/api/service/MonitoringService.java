@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,9 @@ import org.springframework.stereotype.Service;
 public class MonitoringService {
     
     private static final int PAGE_SIZE = 100;
+
+    @Value("${health-check.interval-seconds}")
+    private int healthCheckIntervalSeconds;
 
     private final HealthCheckRepository healthCheckRepository;
     private final MonitoredServiceRepository serviceRepository;
@@ -103,6 +107,10 @@ public class MonitoringService {
         Optional<MonitoredService> serviceQurey = serviceRepository.findById(id);
         if(serviceQurey.isEmpty()){return;}
         serviceRepository.deleteById(id);
+    }
+
+    public int getHealthCheckIntervalSeconds(){
+        return healthCheckIntervalSeconds;
     }
 
 }
