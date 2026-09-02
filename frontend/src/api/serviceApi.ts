@@ -78,3 +78,16 @@ export async function deleteService(id: number): Promise<void> {
         throw new Error("Failed to delete service");
     }
 }
+
+
+export async function getUpdateInterval(): Promise<number> {
+    const response = await fetch(`${API_URL}/config`, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete service");
+    }
+
+    return response.json()
+}
