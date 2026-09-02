@@ -1,3 +1,5 @@
 package com.example.api.DTO;
 
-public record ServiceRequestDTO(String name, String url) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record ServiceRequestDTO(@NotBlank String name, @NotBlank String url) {}

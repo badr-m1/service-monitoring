@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.api.DTO.*;
 import com.example.api.service.MonitoringService;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -31,13 +36,13 @@ public class MonitoringController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ServiceDTO createService(@RequestBody ServiceRequestDTO serviceRequest){
+    public ServiceSummaryDTO createService(@RequestBody @Valid ServiceRequestDTO serviceRequest){
         return monitoringService.createService(serviceRequest.name(), serviceRequest.url());
     }
 
     @PutMapping("/{id}")
-    public ServiceDTO updateService(@PathVariable long id, @RequestBody ServiceRequestDTO serviceRequest){
-        return monitoringService.updateService(id, serviceRequest.name(), serviceRequest.url());
+    public ServiceSummaryDTO updateService(@PathVariable @Positive long id, @RequestBody String name){
+        return monitoringService.updateService(id, name);
     }
 
     @GetMapping
@@ -46,24 +51,31 @@ public class MonitoringController {
     }
 
     @GetMapping("/{id}")
-    public ServiceSummaryDTO getService(@PathVariable long id){
+    public ServiceSummaryDTO getService(@PathVariable @Positive long id){
         return monitoringService.getService(id);
     }
 
     @GetMapping("/{id}/history")
-    public ServiceHistoryDTO getServiceHistory(@PathVariable long id, @RequestParam(defaultValue = "0") int page){
-        return monitoringService.getServiceHistory(id, 0);
+    public ServiceHistoryDTO getServiceHistory(
+        @PathVariable @Positive long id, 
+        @RequestParam(required = false) Instant startTime,  
+        @RequestParam(required = false) Instant endTime
+    ){
+        if(endTime == null) endTime = Instant.now();
+        if(startTime == null) startTime = endTime.minus(24, ChronoUnit.HOURS);
+
+        return monitoringService.getServiceHistory(id, startTime, endTime);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteService(@PathVariable long id){
+    public void deleteService(@PathVariable @Positive long id){
         monitoringService.deleteService(id);
     }
     
     @GetMapping("/config")
-    public int getConfig() {
-        return monitoringService.getHealthCheckIntervalSeconds();
+    public long getConfig() {
+        return monitoringService.getHealthCheckIntervalMS();
     }
     
 }

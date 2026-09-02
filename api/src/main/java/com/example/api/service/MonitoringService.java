@@ -1,59 +1,83 @@
 package com.example.api.service;
 
 import com.example.api.DTO.*;
+import com.example.api.exception.ResourceNotFoundException;
+import com.example.api.exception.ServiceUnreachableException;
 import com.example.servicemonitoring.entity.HealthCheck;
 import com.example.servicemonitoring.entity.MonitoredService;
+import com.example.servicemonitoring.entity.ServiceStatus;
 import com.example.servicemonitoring.repository.HealthCheckRepository;
 import com.example.servicemonitoring.repository.MonitoredServiceRepository;
+import org.springframework.web.client.RestClient;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MonitoringService {
     
-    private static final int PAGE_SIZE = 100;
+    @Value("${health.check.interval.ms}")
+    private long healthCheckIntervalMS;
 
-    @Value("${health-check.interval-seconds}")
-    private int healthCheckIntervalSeconds;
-
+    @Value("${health.check.timeout.ms}")
+    private int connectionTimeoutMS;
+    
+    private final RestClient restClient;
     private final HealthCheckRepository healthCheckRepository;
-    private final MonitoredServiceRepository serviceRepository;
+    private final MonitoredServiceRepository serviceRepository; 
 
     public MonitoringService(
         HealthCheckRepository healthCheckRepository, 
-        MonitoredServiceRepository serviceRepository
+        MonitoredServiceRepository serviceRepository,
+        RestClient.Builder restClientBuilder
     ){
         this.healthCheckRepository = healthCheckRepository;
         this.serviceRepository = serviceRepository;
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+
+        requestFactory.setConnectTimeout(connectionTimeoutMS);
+        requestFactory.setReadTimeout(connectionTimeoutMS);
+
+        this.restClient = restClientBuilder
+        .requestFactory(requestFactory)
+        .build();
+
     }
     
-    public ServiceDTO createService(String name, String url){
+    public ServiceSummaryDTO createService(String name, String url){
+        HealthCheck healthCheck = getHealthCheck(url);
+
         MonitoredService newService = new MonitoredService(name, url);
         MonitoredService saved = serviceRepository.save(newService);
-        return new ServiceDTO(saved.getId(), saved.getName(), saved.getUrl());
+        healthCheck.setServiceId(saved.getId());
+        
+        healthCheckRepository.save(healthCheck);
+
+        return new ServiceSummaryDTO(saved, new HealthCheckDTO(healthCheck));
     }
 
-    public ServiceDTO updateService(long id, String name, String url){
-        Optional<MonitoredService> serviceQurey = serviceRepository.findById(id);
+    public ServiceSummaryDTO updateService(long id, String name){
+        MonitoredService service = serviceRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Service with id " + id + " not found"
+        ));
 
-        if(serviceQurey.isEmpty()){
-            return new ServiceDTO(-1, null, null);
-        }
-        
-        MonitoredService service = serviceQurey.get();
         service.setName(name);
-        service.setUrl(url);
         MonitoredService saved = serviceRepository.save(service);
-        return new ServiceDTO(saved.getId(), saved.getName(), saved.getUrl());
-        
+        Optional<HealthCheck> healthCheck = healthCheckRepository.findFirstByServiceIdOrderByCheckedAtDesc(id);
+        HealthCheckDTO hcDTO = (healthCheck.isEmpty())? null : new HealthCheckDTO(healthCheck.get());
+
+        return new ServiceSummaryDTO(service, hcDTO);  
     }
 
     public List<ServiceSummaryDTO> getAllServicesSummaries(){
@@ -65,7 +89,7 @@ public class MonitoringService {
         List<ServiceSummaryDTO> summaries = servs.stream()
         .map(service ->{
             HealthCheck hc = healthCheckMap.get(service.getId());
-            HealthCheckDTO hcDTO = (hc == null)? null : new HealthCheckDTO(hc);
+            HealthCheckDTO hcDTO = (hc == null)? null : new HealthCheckDTO(hc); //this could break the frontend
             return new ServiceSummaryDTO(service, hcDTO);
         })
         .toList();
@@ -74,28 +98,24 @@ public class MonitoringService {
     }
     
     public ServiceSummaryDTO getService(long id){
-        Optional<MonitoredService> serviceQurey = serviceRepository.findById(id);
+        MonitoredService service = serviceRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Service with id " + id + " not found"
+        ));
 
-        if(serviceQurey.isEmpty()){
-            return new ServiceSummaryDTO(-1, null, null, null);
-        }
-        
-        MonitoredService service = serviceQurey.get();
         Optional<HealthCheck> healthCheckQuery = healthCheckRepository.findFirstByServiceIdOrderByCheckedAtDesc(service.getId());
         HealthCheckDTO hcDTO = healthCheckQuery.isPresent()? new HealthCheckDTO(healthCheckQuery.get()) : null;
         return new ServiceSummaryDTO(service, hcDTO);
     }
 
-    public ServiceHistoryDTO getServiceHistory(long id, int page){
-        Optional<MonitoredService> serviceQurey = serviceRepository.findById(id);
+    public ServiceHistoryDTO getServiceHistory(long id, Instant startTime, Instant endTime){
+        MonitoredService service = serviceRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Service with id " + id + " not found"
+        ));
 
-        if(serviceQurey.isEmpty()){
-            return new ServiceHistoryDTO(-1, null, null, null);
-        }
-        Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        MonitoredService service = serviceQurey.get();
         List<HealthCheckDTO> healthCheckDTOs = healthCheckRepository
-        .findByServiceIdOrderByCheckedAtDesc(service.getId(), pageable)
+        .findByServiceIdAndCheckedAtBetweenOrderByCheckedAtDesc(service.getId(), startTime, endTime)
         .stream()
         .map(hc -> new HealthCheckDTO(hc))
         .toList();
@@ -104,13 +124,42 @@ public class MonitoringService {
     }
 
     public void deleteService(long id){
-        Optional<MonitoredService> serviceQurey = serviceRepository.findById(id);
-        if(serviceQurey.isEmpty()){return;}
+        MonitoredService service = serviceRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Service with id " + id + " not found"
+        ));
+
         serviceRepository.deleteById(id);
     }
 
-    public int getHealthCheckIntervalSeconds(){
-        return healthCheckIntervalSeconds;
+    public long getHealthCheckIntervalMS(){
+        return healthCheckIntervalMS;
+    }
+
+    private HealthCheck getHealthCheck(String url) {
+        Instant start = Instant.now();
+
+        try {
+            ResponseEntity<Void> response = restClient.get()
+            .uri(url)
+            .retrieve()
+            .toBodilessEntity();
+            int code = response.getStatusCode().value();
+
+            ServiceStatus status = (code > 199 && code <= 299)? ServiceStatus.UP : ServiceStatus.DOWN;
+            Instant end = Instant.now();
+
+            return new HealthCheck(
+                -1,
+                status,
+                code,
+                Duration.between(start, end).toMillis(),
+                Instant.now()
+            );
+
+        } catch (Exception e) {
+            throw new ServiceUnreachableException("Could not connect to URL: " + url);
+        }
     }
 
 }
