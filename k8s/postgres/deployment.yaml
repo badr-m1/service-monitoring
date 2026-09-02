@@ -39,6 +39,32 @@ spec:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
 
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - service_monitoring
+                - -W
+                - $POSTGRES_PASSWORD
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+                - -d
+                - service_monitoring
+                - -W
+                - $POSTGRES_PASSWORD
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
       volumes:
         - name: postgres-data
           persistentVolumeClaim:

@@ -20,9 +20,21 @@ spec:
           image: service-monitoring-worker:latest
           imagePullPolicy: Never
 
+          ports:
+            - containerPort: 8081
+
           envFrom:
             - configMapRef:
                 name: service-monitoring-config
 
             - secretRef:
                 name: service-monitoring-secret
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
