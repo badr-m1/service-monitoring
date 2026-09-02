@@ -29,16 +29,3 @@ spec:
 
             - secretRef:
                 name: service-monitoring-secret
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api
-spec:
-  selector:
-    app: api
-
-  ports:
-    - port: 8080
-      targetPort: 8080
