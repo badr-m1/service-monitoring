@@ -1,5 +1,6 @@
 package com.example.servicemonitoring.repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,7 +12,7 @@ import com.example.servicemonitoring.entity.HealthCheck;
 
 public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long>{
     
-    List<HealthCheck> findByServiceIdOrderByCheckedAtDesc(long serviceId, Pageable pageable);
+    List<HealthCheck> findByServiceIdAndCheckedAtBetweenOrderByCheckedAtDesc(long serviceId, Instant startTime, Instant endTime);
     
     Optional<HealthCheck> findFirstByServiceIdOrderByCheckedAtDesc(long serviceId);
 

@@ -1,26 +1,65 @@
-import { useParams } from 'react-router-dom';
-import type { ServiceHistory } from '../Types/serviceHistory';
-import ServiceHistoryCard from '../components/ServiceHistoryCard';
+import { useParams } from "react-router-dom";
+import type { ServiceHistory } from "../Types/serviceHistory";
+import ServiceHistoryCard from "../components/ServiceHistoryCard";
+import { useState, useEffect } from "react";
+import { getServiceHistory } from "../api/serviceApi";
 
 function ServiceDetails() {
-    const { id } = useParams();
-    const payload: any = {"id":1,"name":"Google","url":"https://www.google.com","healthChecks":[{"id":139,"status":"UP","statusCode":200,"responseTime":161,"checkedAt":"2026-09-01T18:48:53.788774Z"},{"id":138,"status":"UP","statusCode":200,"responseTime":835,"checkedAt":"2026-09-01T18:47:53.885629Z"},{"id":135,"status":"UP","statusCode":200,"responseTime":192,"checkedAt":"2026-09-01T18:39:03.386848Z"},{"id":134,"status":"UP","statusCode":200,"responseTime":769,"checkedAt":"2026-09-01T18:38:03.457620Z"},{"id":101,"status":"UP","statusCode":200,"responseTime":638,"checkedAt":"2026-08-31T21:44:08.535361Z"},{"id":68,"status":"UP","statusCode":200,"responseTime":779,"checkedAt":"2026-08-31T21:40:52.702098Z"}]}
-    
-    const serviceHistory: ServiceHistory = {
-        ...payload,
-        healthChecks: payload.healthChecks.map((healthCheck) => ({
-            ...healthCheck,
-            checkedAt: new Date(healthCheck.checkedAt),
-        })),
-    };
-    
-    return (
+  const { id } = useParams();
+
+  const [serviceHistory, setServiceHistory] =
+    useState<ServiceHistory | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setError("Invalid service ID");
+      setLoading(false);
+      return;
+    }
+
+    const serviceId = Number(id);
+
+    if (Number.isNaN(serviceId)) {
+      setError("Invalid service ID");
+      setLoading(false);
+      return;
+    }
+
+    const now = new Date();
+
+    const twentyFourHoursAgo = new Date(
+      now.getTime() - 24 * 60 * 60 * 1000
+    );
+
+    getServiceHistory(serviceId, twentyFourHoursAgo, now)
+      .then(setServiceHistory)
+      .catch(() => setError("Failed to load service history"))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-600">{error}</div>;
+  }
+
+  if (!serviceHistory) {
+    return <div className="p-6">No service history found.</div>;
+  }
+
+  return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto max-w-6xl">
         <h1 className="mb-6 text-3xl font-bold text-gray-900">
-          {serviceHistory.name}
+          Service History
         </h1>
-        <ServiceHistoryCard serviceHistory={serviceHistory}/>
+
+        <ServiceHistoryCard serviceHistory={serviceHistory} />
       </div>
     </div>
   );
