@@ -52,12 +52,28 @@ function ServiceDetails() {
     return <div className="p-6">No service history found.</div>;
   }
 
+  const numOfUpStats : number = serviceHistory.healthChecks.filter((healthCheck) => healthCheck.status == "UP").length
+  const uptimePercentage =
+  serviceHistory.healthChecks.length === 0
+    ? 0
+    : (numOfUpStats / serviceHistory.healthChecks.length) * 100;
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto max-w-6xl">
-        <h1 className="mb-6 text-3xl font-bold text-gray-900">
-          Service History
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          Service History — Last 24 Hours
         </h1>
+
+        <div className="mb-6 flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-600">
+            Uptime
+          </span>
+
+          <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+            {uptimePercentage.toFixed(2)}%
+          </span>
+        </div>
 
         <ServiceHistoryCard serviceHistory={serviceHistory} />
       </div>
