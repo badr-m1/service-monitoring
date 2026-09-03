@@ -47,8 +47,6 @@ spec:
                 - postgres
                 - -d
                 - service_monitoring
-                - -W
-                - $POSTGRES_PASSWORD
             initialDelaySeconds: 10
             periodSeconds: 10
 
@@ -60,8 +58,6 @@ spec:
                 - postgres
                 - -d
                 - service_monitoring
-                - -W
-                - $POSTGRES_PASSWORD
             initialDelaySeconds: 5
             periodSeconds: 5
 
