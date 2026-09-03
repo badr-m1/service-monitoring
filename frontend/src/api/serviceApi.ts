@@ -60,7 +60,7 @@ export async function getServiceHistory(id: number, startTime: Date, endTime: Da
     const startTimeStr = startTime.toISOString();
     const endTimeStr = endTime.toISOString();
 
-    const response = await fetch(`${API_URL}/services/${id}/history?startTime=${startTimeStr}&?endTime=${endTimeStr}`);
+    const response = await fetch(`${API_URL}/${id}/history??startTime=${startTimeStr}&endTime=${endTimeStr}`);
 
     if (!response.ok) {
         throw new Error("Failed to fetch service history");
