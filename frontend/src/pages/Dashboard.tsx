@@ -1,9 +1,7 @@
 import {useEffect, useState } from 'react';
 import type { ServiceSummary } from '../Types/serviceSummary';
-import type { ServiceRequest } from '../Types/serviceRequest';
 import { getAllServices, createService, updateService, deleteService, getUpdateInterval } from '../api/serviceApi';
 import ServiceSummaryCard from '../components/ServiceSummaryCard';
-import { Link } from 'react-router-dom';
 import Popup from '../components/Popup';
 import CreateServiceFrom from '../components/CreateServiceFrom';
 
@@ -21,7 +19,7 @@ function Dashboard() {
     .finally(() => setLoading(false));
   }
 
-  const handleCreateService = (name, url) => {
+  const handleCreateService = (name: string, url : string) => {
     createService({ "name": name, "url": url })
       .then((service) => {
         console.log("created", service);
@@ -33,7 +31,7 @@ function Dashboard() {
       });
   }
 
-  const handleUpdateService = (id, name) => {
+  const handleUpdateService = (id : number, name : string) => {
     updateService(id, name)
       .then((service) => {
         console.log("updated", service);
@@ -44,7 +42,7 @@ function Dashboard() {
       });
   }
 
-  const handleDeleteService = (id) => {
+  const handleDeleteService = (id : number) => {
     deleteService(id)
       .then((service) => {
         console.log("deleted", service);

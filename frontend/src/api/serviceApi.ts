@@ -2,7 +2,7 @@ import type { ServiceSummary } from "../Types/serviceSummary";
 import type { ServiceHistory } from "../Types/serviceHistory";
 import type { ServiceRequest } from "../Types/serviceRequest";
 
-const API_URL = "http://localhost:8080/services";
+const API_URL = "/api/services";
 
 export async function createService(serviceRequest: ServiceRequest): Promise<ServiceSummary> {
     const response = await fetch(`${API_URL}`, {
@@ -81,12 +81,10 @@ export async function deleteService(id: number): Promise<void> {
 
 
 export async function getUpdateInterval(): Promise<number> {
-    const response = await fetch(`${API_URL}/config`, {
-        method: "DELETE",
-    });
+    const response = await fetch(`${API_URL}/config`);
 
     if (!response.ok) {
-        throw new Error("Failed to delete service");
+        throw new Error("Failed to retrive update interval");
     }
 
     return response.json()

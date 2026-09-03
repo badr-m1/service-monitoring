@@ -24,7 +24,7 @@ function UpdateServiceForm({ onSubmit }: UpdateServiceFormProps){
 
         <button
             type="submit"
-            className="rounded bg-blue-500 p-2 text-white"
+            className="rounded bg-blue-500 p-2 text-white hover:bg-blue-600"
         >
             Submit
         </button>
