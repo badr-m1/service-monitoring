@@ -26,7 +26,7 @@ export async function updateService(id: number, name: string): Promise<ServiceSu
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(name),
+        body: name,
     });
 
     if (!response.ok) {
